@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Patient Case File</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌻</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:Inter,system-ui;
+background:radial-gradient(circle at top,#ffe6ec,#f3c6d3,#e6a8ba);
+min-height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+overflow:hidden;
+color:#2a1a1f;
+}
+.file{
+backdrop-filter:blur(18px);
+background:rgba(255,255,255,.55);
+border-radius:22px;
+padding:36px;
+width:90%;
+max-width:520px;
+max-height:90vh;
+overflow-y:auto;
+box-shadow:0 30px 80px rgba(0,0,0,.18);
+}
+h1{margin:0;font-size:1.8rem}
+.tag{
+display:inline-block;
+background:rgba(230,90,125,.15);
+color:#b13055;
+padding:6px 12px;
+border-radius:999px;
+font-size:.75rem;
+margin-top:10px;
+}
+.divider{
+height:1px;
+background:linear-gradient(to right,transparent,rgba(0,0,0,.15),transparent);
+margin:24px 0;
+}
+.label{
+font-size:.75rem;
+text-transform:uppercase;
+letter-spacing:.1em;
+color:#7a4b58;
+margin-top:18px;
+}
+.content{font-size:1.05rem;line-height:1.7;margin-top:6px}
+.btn-container{display:flex;gap:12px;margin-top:30px}
+button{
+flex:1;
+padding:15px;
+border-radius:14px;
+border:none;
+font-size:1rem;
+cursor:pointer;
+background:linear-gradient(135deg,#e14b7b,#f08ca2);
+color:white;
+}
+button.secondary{
+background:#f8f9fa;
+color:#7a4b58;
+border:1px solid rgba(0,0,0,.05);
+}
+input{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:1px solid rgba(0,0,0,.15);
+font-size:1rem;
+margin-top:10px;
+}
+.signature{
+margin-top:26px;
+font-style:italic;
+text-align:right;
+color:#b13055;
+font-weight:600;
+font-size:1.1rem;
+}
+.forever{
+margin-top:14px;
+font-size:.95rem;
+color:#7a4b58;
+font-weight:600;
+}
+</style>
+</head>
+
+<body>
+
+<audio id="heartbeat" src="https://www.soundjay.com/human/heartbeat-01.mp3"></audio>
+
+<div class="file" id="screen"></div>
+
+<script>
+const correctPassword = "1909";
+let heartRate = 72;
+let index = 0;
+
+// PASSWORD SCREEN
+const passwordScreen = `
+<h1>Doctor Access Required</h1>
+<div class="tag">Confidential</div>
+<div class="divider"></div>
+<div class="label">Enter Access Code</div>
+<input type="password" id="passwordInput" placeholder="Doctor only 🩺">
+<div class="btn-container">
+<button onclick="checkPassword()">Unlock Case 🔓</button>
+</div>
+<div id="error" style="margin-top:15px;color:#991b1b;"></div>
+`;
+
+// MAIN SCREENS
+const screens = [
+
+`<h1>Patient Case File</h1>
+<div class="tag">Confidential</div>
+<div class="divider"></div>
+
+<div class="label">Patient</div>
+<div class="content">One (1) very lucky Husband (Rivan)</div>
+
+<div class="label">Marital Status</div>
+<div class="content">💍 Permanently Taken</div>
+
+<div class="label">Attending Physician</div>
+<div class="content">Aarohi 🩺</div>
+
+<div class="btn-container"><button onclick="next()">Open Case</button></div>`,
+
+`<h1>Chief Complaint</h1>
+<div class="tag">Ongoing</div>
+<div class="divider"></div>
+<div class="content">
+Persistent warmth in the chest when thinking about one incredibly intelligent, kind, and beautiful future doctor.
+</div>
+<div class="btn-container"><button onclick="next()">Review Symptoms</button></div>`,
+
+`<h1>Symptoms</h1>
+<div class="tag">Well Documented</div>
+<div class="divider"></div>
+<div class="content">
+• Smiling for no reason<br>
+• Calmness triggered by your voice<br>
+• Wanting to share every moment<br>
+• Absolute certainty that you are my favorite person
+</div>
+<div class="btn-container"><button onclick="next()">Assessment</button></div>`,
+
+`<h1>Assessment</h1>
+<div class="tag">Stable</div>
+<div class="divider"></div>
+<div class="content">
+Condition is chronic and irreversible.<br><br>
+Patient reports safety, comfort, and peace in your presence.
+</div>
+<div class="btn-container"><button onclick="next()">Final Recommendation</button></div>`,
+
+`<h1>Final Recommendation</h1>
+<div class="tag">High Priority</div>
+<div class="divider"></div>
+<div class="content">
+<strong>Will you be Patient’s Valentine?</strong>
+</div>
+<div class="btn-container">
+<button onclick="yes()">Accept 💌</button>
+<button class="secondary" onmouseover="this.style.transform='translateX(40px)'">Reject ❌</button>
+</div>`,
+
+`<h1>Treatment Plan</h1>
+<div class="tag">Valentine’s Day</div>
+<div class="divider"></div>
+<div class="content">
+<strong>Prescribed Activities:</strong><br>
+• Eye contact<br>
+• Hugs<br>
+• Long talks<br>
+• Eating together<br>
+• Laughing a lot<br>
+• Making stupid jokes<br>
+• Feeling at peace<br><br>
+
+<strong>Side Effects:</strong><br>
+• Love fever 💗<br><br>
+
+<strong>Post-Withdrawal Symptoms:</strong><br>
+• Extreme missing<br>
+• Recurrent watching pictures & videos<br>
+• Sleepless nights<br><br>
+
+Treatment is lifelong and non-negotiable.
+</div>
+
+<div class="forever">🩺 Case Valid Forever</div>
+<div class="signature">I love you, Baykudi 💌</div>`
+];
+
+// INITIAL LOAD
+document.getElementById("screen").innerHTML = passwordScreen;
+
+function checkPassword(){
+  const input=document.getElementById("passwordInput").value;
+  const error=document.getElementById("error");
+  if(input===correctPassword){
+    index=0;
+    document.getElementById("screen").innerHTML=screens[index];
+    index++;
+  }else{
+    heartRate+=8;
+    error.innerHTML=`❌ Wrong password… heart rate increasing 💓 (${heartRate} bpm)`;
+  }
+}
+
+function next(){
+  if(index<screens.length){
+    document.getElementById("screen").innerHTML=screens[index];
+    index++;
+  }
+}
+
+function yes(){
+  document.getElementById("heartbeat").play();
+  confetti({particleCount:160,spread:80,origin:{y:.6}});
+  index=5;
+  document.getElementById("screen").innerHTML=screens[5];
+}
+</script>
+
+</body>
+</html>
